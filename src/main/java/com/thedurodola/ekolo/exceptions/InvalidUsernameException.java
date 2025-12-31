@@ -1,0 +1,7 @@
+package com.thedurodola.ekolo.exceptions;
+
+public class InvalidUsernameException extends RuntimeException {
+    public InvalidUsernameException(String message){
+        super(message);
+    }
+}

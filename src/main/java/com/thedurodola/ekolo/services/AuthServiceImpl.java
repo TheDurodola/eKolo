@@ -4,28 +4,34 @@ import com.thedurodola.ekolo.data.models.UserAccount;
 import com.thedurodola.ekolo.data.repositories.UserAccounts;
 import com.thedurodola.ekolo.dtos.requests.RegisterUserAccountRequest;
 import com.thedurodola.ekolo.dtos.responses.RegisterUserAccountResponse;
-import com.thedurodola.ekolo.exceptions.InvalidNameException;
-import lombok.RequiredArgsConstructor;
+import com.thedurodola.ekolo.exceptions.*;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import static com.thedurodola.ekolo.util.Validator.validate;
+
 @Service
-@RequiredArgsConstructor
+@Slf4j
 public class AuthServiceImpl implements AuthService {
 
     private final UserAccounts userAccounts;
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
+
+    public AuthServiceImpl(UserAccounts userAccounts) {
+        this.userAccounts = userAccounts;
+        this.modelMapper = new ModelMapper();
+    }
 
     @Override
     public RegisterUserAccountResponse register(RegisterUserAccountRequest request) {
-        if (request.getFirstName() == null || request.getFirstName().isEmpty()){
-            throw new InvalidNameException();
-        }
-
-
+        validate(request);
+        log.info("Input validated for user account with username '{}'", request.getUsername());
 
         UserAccount userAccount = modelMapper.map(request,UserAccount.class);
         userAccounts.save(userAccount);
+        log.info("User account with username '{}' has been registered", request.getUsername());
         return modelMapper.map(userAccount,RegisterUserAccountResponse.class);
     }
+
 }
