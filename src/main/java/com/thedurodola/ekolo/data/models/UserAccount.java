@@ -44,7 +44,7 @@ public class UserAccount {
     private LocalDate dateOfBirth;
 
     @Column(nullable = false,  unique = true)
-    private String imageUrl;
+    private String profilePictureUrl;
 
     @Column(nullable = false,  unique = true)
     @Enumerated(EnumType.STRING)
