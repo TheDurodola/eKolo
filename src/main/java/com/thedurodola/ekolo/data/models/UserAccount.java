@@ -1,6 +1,7 @@
 package com.thedurodola.ekolo.data.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.thedurodola.ekolo.data.models.enums.Authority;
 import com.thedurodola.ekolo.data.models.enums.Gender;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -14,6 +15,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -49,6 +52,9 @@ public class UserAccount {
     @Column(nullable = false,  unique = true)
     @Enumerated(EnumType.STRING)
     private Gender gender;
+
+    @Column(nullable = false)
+    private Set<Authority> authorities;
 
     @CreatedDate
     private Instant createdAt;

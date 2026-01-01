@@ -15,11 +15,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 
-
 import java.time.LocalDate;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -44,13 +43,14 @@ class AuthServiceTest {
         request.setLastName("lastName");
         request.setGender("MALE");
         request.setDateOfBirth(LocalDate.of(1980, 1, 1));
-        MockMultipartFile file = new MockMultipartFile(
-                "image",
-                "vacation.png",
-                MediaType.IMAGE_PNG_VALUE,
-                "some-binary-data".getBytes()
+        byte[] jpegSignature = new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF};
+        MockMultipartFile validImageFile = new MockMultipartFile(
+                "profilePicture",
+                "test-image.jpg",
+                "image/jpeg",
+                jpegSignature
         );
-        request.setProfilePicture(file);
+        request.setProfilePicture(validImageFile);
 
     }
 
@@ -140,6 +140,50 @@ class AuthServiceTest {
     void thatExceptionIsThrownIfUsernameIsLessThan4Characters(){
         request.setUsername("jon");
         assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidUsernameException.class);
+    }
+
+    @Test
+    void thatExceptionIsThrownWhenAUsernameWithAnInvalidCharacter(){
+        request.setUsername("john*onestar");
+        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidUsernameException.class);
+        request.setUsername("john==onestar");
+        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidUsernameException.class);
+        request.setUsername("john#onestar");
+        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidUsernameException.class);
+        request.setUsername("john$%5onestar");
+        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidUsernameException.class);
+        request.setUsername("#johnonestar");
+        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidUsernameException.class);
+        request.setUsername("john_boj");
+        assertDoesNotThrow(()-> authService.register(request));
+    }
+
+
+    @Test
+    void thatUserMustBeAbove12YearsOfAge(){
+        request.setDateOfBirth(LocalDate.now().minusYears(11));
+        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidDateOfBirthException.class);
+        request.setDateOfBirth(LocalDate.now().minusYears(12));
+        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidDateOfBirthException.class);
+    }
+
+    @Test
+    void thatUserMustBeBelow100YearsOfAge(){
+        request.setDateOfBirth(LocalDate.now().minusYears(110));
+        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidDateOfBirthException.class);
+    }
+
+
+    @Test
+    void thatOnlyImageFileAreAccepted(){
+        byte[] pdfSignature = new byte[]{ 0x25, 0x50, 0x44, 0x46, 0x2D };
+        MockMultipartFile pdfFile = new MockMultipartFile(
+                "profilePicture",
+                "contract.pdf",
+                "application/pdf",
+                pdfSignature
+        );
+        request.setProfilePicture(pdfFile);
     }
 
 

@@ -26,7 +26,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public RegisterUserAccountResponse register(RegisterUserAccountRequest request) {
         validate(request);
-        log.info("Input validated for user account with username '{}'", request.getUsername());
+        log.info("Inputs validated for user account with username '{}'", request.getUsername());
 
         UserAccount userAccount = modelMapper.map(request,UserAccount.class);
         userAccounts.save(userAccount);

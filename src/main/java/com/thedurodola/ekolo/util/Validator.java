@@ -2,8 +2,25 @@ package com.thedurodola.ekolo.util;
 
 import com.thedurodola.ekolo.dtos.requests.RegisterUserAccountRequest;
 import com.thedurodola.ekolo.exceptions.*;
+import org.apache.tika.Tika;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.util.Arrays;
+import java.util.List;
 
 public  class Validator {
+
+    private static final Tika tika = new Tika();
+    private static final List<String> ALLOWED_MIME_TYPES = Arrays.asList(
+            "image/jpeg",
+            "image/png"
+    );
+
+    public Validator() {
+    }
 
     public static void validate(RegisterUserAccountRequest request) {
         validateNames(request);
@@ -26,15 +43,33 @@ public  class Validator {
         }
     }
 
-    private static void validateProfilePicture(RegisterUserAccountRequest request) {
+    private static void validateProfilePicture(RegisterUserAccountRequest request)  {
         if (request.getProfilePicture() == null || request.getProfilePicture().isEmpty()){
             throw new InvalidProfilePictureException("The Profile Picture field cannot be null");
+        }
+
+        try {
+            String fileType = tika.detect(request.getProfilePicture().getInputStream());
+
+            if (!ALLOWED_MIME_TYPES.contains(fileType)) {
+                throw new InvalidProfilePictureException("Invalid file type: " + fileType);
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
     private static void validateDateOfBirth(RegisterUserAccountRequest request) {
         if (request.getDateOfBirth() == null){
             throw new InvalidDateOfBirthException("The Date of Birth field cannot be null");
+        }
+        Period period = Period.between(request.getDateOfBirth(), LocalDate.now());
+        if (period.getYears() <= 12){
+            throw new InvalidDateOfBirthException("Must be older than 12 years old");
+        }
+        if (period.getYears() >= 100){
+            throw new InvalidDateOfBirthException("Must be younger than 100 years old");
         }
     }
 
@@ -45,6 +80,11 @@ public  class Validator {
         if (request.getUsername().length() < 4){
             throw new InvalidUsernameException("Username length should be at least 4");
         }
+
+        if (!request.getUsername().matches("^[a-zA-Z][a-zA-Z0-9_]{2,15}$")) {
+            throw new InvalidUsernameException("Invalid Username");
+        }
+
     }
 
     private static void validateGender(RegisterUserAccountRequest request) {
