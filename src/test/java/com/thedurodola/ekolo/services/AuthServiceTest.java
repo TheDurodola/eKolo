@@ -12,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.time.LocalDate;
@@ -41,7 +40,7 @@ class AuthServiceTest {
         request.setPassword("Password123");
         request.setFirstName("firstName");
         request.setLastName("lastName");
-        request.setGender("MALE");
+        request.setGender("M");
         request.setDateOfBirth(LocalDate.of(1980, 1, 1));
         byte[] jpegSignature = new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF};
         MockMultipartFile validImageFile = new MockMultipartFile(
@@ -58,119 +57,119 @@ class AuthServiceTest {
     @Test
     void thatMethodSavesAUserAccount() {
         when(userAccounts.save(Mockito.any(UserAccount.class))).thenReturn(Mockito.mock(UserAccount.class));
-        RegisterUserAccountResponse register = authService.register(request);
+        RegisterUserAccountResponse register = authService.registerTierOneUser(request);
         verify(userAccounts,  Mockito.times(1)).save(Mockito.any(UserAccount.class));
     }
 
     @Test
     void thatMethodThrowsExceptionWhenAnNullFirstnameIsSent(){
         request.setFirstName(null);
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidNameException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidNameException.class);
     }
 
     @Test
     void thatMethodThrowsExceptionWhenANullLastNameIsSent(){
         request.setLastName(null);
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidNameException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidNameException.class);
     }
 
     @Test
     void thatMethodThrowsExceptionWhenANullDateOfBirthIsSent(){
         request.setDateOfBirth(null);
-        assertThatThrownBy(()  -> authService.register(request)).isInstanceOf(InvalidDateOfBirthException.class);
+        assertThatThrownBy(()  -> authService.registerTierOneUser(request)).isInstanceOf(InvalidDateOfBirthException.class);
     }
 
     @Test
     void thatMethodThrowsExceptionWhenANullProfilePictureIsSent(){
         request.setProfilePicture(null);
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidProfilePictureException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidProfilePictureException.class);
     }
 
 
     @Test
     void thatMethodThrowsExceptionWhenANullEmailIsSent(){
         request.setEmail(null);
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidEmailException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidEmailException.class);
     }
 
     @Test
     void thatMethodThrowsExceptionWhenANullUsernameIsSent(){
         request.setUsername(null);
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidUsernameException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidUsernameException.class);
     }
 
 
     @Test
     void thatMethodThrowsExceptionWhenANullPasswordIsSent(){
         request.setPassword(null);
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidPasswordException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidPasswordException.class);
     }
 
     @Test
     void thatMethodThrowsExceptionWhenANullGenderIsSent(){
         request.setGender(null);
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidGenderException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidGenderException.class);
     }
 
     @Test
     void thatMethodPasswordMustBeMoreThanSixDigits(){
         request.setPassword("Passw");
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidPasswordException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidPasswordException.class);
     }
 
     @Test
     void thatExceptionIsThrownIfPasswordDoesntHaveAUpperCaseCharacter(){
         request.setPassword("password123");
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidPasswordException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidPasswordException.class);
     }
 
     @Test
     void thatExceptionIsThrownIfPasswordDoesntHaveANumberCharacter(){
         request.setPassword("Password");
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidPasswordException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidPasswordException.class);
     }
 
     @Test
     void thatExceptionIsThrownIfPasswordConsistOfOnlySpace(){
         request.setPassword("       ");
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidPasswordException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidPasswordException.class);
     }
 
     @Test
     void thatExceptionIsThrownIfUsernameIsLessThan4Characters(){
         request.setUsername("jon");
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidUsernameException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidUsernameException.class);
     }
 
     @Test
     void thatExceptionIsThrownWhenAUsernameWithAnInvalidCharacter(){
         request.setUsername("john*onestar");
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidUsernameException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidUsernameException.class);
         request.setUsername("john==onestar");
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidUsernameException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidUsernameException.class);
         request.setUsername("john#onestar");
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidUsernameException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidUsernameException.class);
         request.setUsername("john$%5onestar");
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidUsernameException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidUsernameException.class);
         request.setUsername("#johnonestar");
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidUsernameException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidUsernameException.class);
         request.setUsername("john_boj");
-        assertDoesNotThrow(()-> authService.register(request));
+        assertDoesNotThrow(()-> authService.registerTierOneUser(request));
     }
 
 
     @Test
     void thatUserMustBeAbove12YearsOfAge(){
         request.setDateOfBirth(LocalDate.now().minusYears(11));
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidDateOfBirthException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidDateOfBirthException.class);
         request.setDateOfBirth(LocalDate.now().minusYears(12));
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidDateOfBirthException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidDateOfBirthException.class);
     }
 
     @Test
     void thatUserMustBeBelow100YearsOfAge(){
         request.setDateOfBirth(LocalDate.now().minusYears(110));
-        assertThatThrownBy(()-> authService.register(request)).isInstanceOf(InvalidDateOfBirthException.class);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidDateOfBirthException.class);
     }
 
 
@@ -184,13 +183,54 @@ class AuthServiceTest {
                 pdfSignature
         );
         request.setProfilePicture(pdfFile);
+        assertThatThrownBy(()->  authService.registerTierOneUser(request)).isInstanceOf(InvalidProfilePictureException.class);
     }
 
+    @Test
+    void thatFirstnameCannotConsistOfDigits(){
+        request.setFirstName("John1");
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidNameException.class);
+    }
 
+    @Test
+    void thatLastnameCannotConsistOfDigits(){
+        request.setLastName("John2");
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidNameException.class);
+    }
 
+    @Test
+    void thatLastnameCanContainHyphen(){
+        request.setLastName("Adeniyi-Oso");
+        assertDoesNotThrow(()-> authService.registerTierOneUser(request));
+    }
 
+    @Test
+    void testThatGenderCannotBeNull(){
+        request.setGender(null);
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidGenderException.class);
+    }
 
+    @Test
+    void thatGenderCannotBeEmpty(){
+        request.setGender(" ");
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidGenderException.class);
+    }
 
+    @Test
+    void thatEmailMustContainAtSign(){
+        request.setEmail("bolajidurodolagmail.com");
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidEmailException.class);
+    }
+    @Test
+    void thatEmailCannotContainDoubleAtSign(){
+        request.setEmail("bolajidurodola@@gmail.com");
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidEmailException.class);
+    }
 
+    @Test
+    void thatEmailCannotBeEmpty(){
+        request.setEmail("bolajidurodola@gmail");
+        assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidEmailException.class);
+    }
 
 }

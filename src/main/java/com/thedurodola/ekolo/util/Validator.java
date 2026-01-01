@@ -1,26 +1,25 @@
 package com.thedurodola.ekolo.util;
 
+import com.thedurodola.ekolo.data.models.enums.Gender;
 import com.thedurodola.ekolo.dtos.requests.RegisterUserAccountRequest;
 import com.thedurodola.ekolo.exceptions.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.Arrays;
 import java.util.List;
 
-public  class Validator {
+@Slf4j
+public class Validator {
 
     private static final Tika tika = new Tika();
     private static final List<String> ALLOWED_MIME_TYPES = Arrays.asList(
             "image/jpeg",
             "image/png"
     );
-
-    public Validator() {
-    }
 
     public static void validate(RegisterUserAccountRequest request) {
         validateNames(request);
@@ -33,14 +32,17 @@ public  class Validator {
     }
 
     private static void validateNames(RegisterUserAccountRequest request) {
-        validateName(request.getFirstName(), "Firstname field cannot be null or empty");
-        validateName(request.getLastName(), "Lastname field cannot be null or empty");
+        validateName(request.getFirstName(), "Firstname");
+        validateName(request.getLastName(), "Lastname");
     }
 
     private static void validateName(String request, String message) {
         if (request == null || request.isBlank()) {
-            throw new InvalidNameException(message);
+            throw new InvalidNameException(message + " field cannot be null or empty");
         }
+        if (request.chars().anyMatch(Character::isDigit)) {
+            throw new InvalidNameException(message + " cannot contain digits");
+        };
     }
 
     private static void validateProfilePicture(RegisterUserAccountRequest request)  {
@@ -52,6 +54,7 @@ public  class Validator {
             String fileType = tika.detect(request.getProfilePicture().getInputStream());
 
             if (!ALLOWED_MIME_TYPES.contains(fileType)) {
+                log.warn("User {} attempted to upload a invalid file type: {}",request.getEmail(), fileType);
                 throw new InvalidProfilePictureException("Invalid file type: " + fileType);
             }
 
@@ -91,12 +94,22 @@ public  class Validator {
         if (request.getGender() == null || request.getGender().isBlank()){
             throw new InvalidGenderException("Gender field cannot be null or empty");
         }
+
+        if (Arrays.stream(Gender.values())
+                .anyMatch(g -> g.name().equalsIgnoreCase(request.getGender()))){
+            throw new InvalidGenderException("Invalid Gender");
+        };
     }
 
     private static void validateEmail(RegisterUserAccountRequest request) {
         if (request.getEmail() == null || request.getEmail().isBlank()){
             throw new InvalidEmailException("Email Address field cannot be null or empty");
         }
+
+        if (!request.getEmail().matches("^[\\w._%+-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")){
+            throw new InvalidEmailException("Invalid Email Address format");
+        };
+
     }
 
     private static void validatePassword(RegisterUserAccountRequest request) {
