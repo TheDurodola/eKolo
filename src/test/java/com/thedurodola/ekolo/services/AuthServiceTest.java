@@ -8,6 +8,7 @@ import com.thedurodola.ekolo.exceptions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -16,6 +17,7 @@ import org.springframework.mock.web.MockMultipartFile;
 
 import java.time.LocalDate;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.verify;
@@ -38,8 +40,8 @@ class AuthServiceTest {
         request.setEmail("johndoe@gmail.com");
         request.setUsername("johndoe");
         request.setPassword("Password123");
-        request.setFirstName("firstName");
-        request.setLastName("lastName");
+        request.setFirstName("John");
+        request.setLastName("Doe");
         request.setGender("M");
         request.setDateOfBirth(LocalDate.of(1980, 1, 1));
         byte[] jpegSignature = new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF};
@@ -231,6 +233,59 @@ class AuthServiceTest {
     void thatEmailCannotBeEmpty(){
         request.setEmail("bolajidurodola@gmail");
         assertThatThrownBy(()-> authService.registerTierOneUser(request)).isInstanceOf(InvalidEmailException.class);
+    }
+
+    @Test
+    void thatLastnameIsUpdateToLowercaseBeforeBeenSavedInTheDatabase(){
+        ArgumentCaptor<UserAccount> captor = ArgumentCaptor.forClass(UserAccount.class);
+        authService.registerTierOneUser(request);
+        verify(userAccounts).save(captor.capture());
+        UserAccount user = captor.getValue();
+        assertThat(user.getLastName()).isEqualTo("doe");
+    }
+
+    @Test
+    void thatFirstnameIsUpdateToLowercaseBeforeBeenSavedInTheDatabase(){
+        ArgumentCaptor<UserAccount> captor = ArgumentCaptor.forClass(UserAccount.class);
+        authService.registerTierOneUser(request);
+        verify(userAccounts).save(captor.capture());
+        UserAccount user = captor.getValue();
+        assertThat(user.getFirstName()).isEqualTo("john");
+    }
+
+    @Test
+    void thatUsernameIsUpdateToLowercaseBeforeBeenSavedInTheDatabase(){
+        request.setUsername("JOHN");
+        ArgumentCaptor<UserAccount> captor = ArgumentCaptor.forClass(UserAccount.class);
+        authService.registerTierOneUser(request);
+        verify(userAccounts).save(captor.capture());
+        UserAccount user = captor.getValue();
+        assertThat(user.getUsername()).isLowerCase();
+    }
+
+    @Test
+    void thatEmailIsUpdateToLowercaseBeforeBeenSavedInTheDatabase(){
+        request.setEmail("BOLAJIdurodola@gmail.com");
+        ArgumentCaptor<UserAccount> captor = ArgumentCaptor.forClass(UserAccount.class);
+        authService.registerTierOneUser(request);
+        verify(userAccounts).save(captor.capture());
+        UserAccount user = captor.getValue();
+        assertThat(user.getEmail()).isLowerCase();
+    }
+
+    @Test
+    void thatPasswordIsHashed(){
+        ArgumentCaptor<UserAccount> captor = ArgumentCaptor.forClass(UserAccount.class);
+        authService.registerTierOneUser(request);
+        verify(userAccounts).save(captor.capture());
+        UserAccount user = captor.getValue();
+        assertThat(user.getPassword()).isNotEqualTo(request.getPassword());
+        assertThat(user.getPassword().length()).isNotEqualTo(10);
+    }
+
+    @Test
+    void thatProfilePictureWasUploadedToTheCloud(){
+
     }
 
 }

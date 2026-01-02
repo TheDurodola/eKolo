@@ -54,7 +54,7 @@ public class UserAccount {
     private Gender gender;
 
     @Column(nullable = false)
-    private Set<Authority> authorities;
+    private Authority authority;
 
     @CreatedDate
     private Instant createdAt;
