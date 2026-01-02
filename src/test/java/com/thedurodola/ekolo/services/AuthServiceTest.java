@@ -5,6 +5,7 @@ import com.thedurodola.ekolo.data.repositories.UserAccounts;
 import com.thedurodola.ekolo.dtos.requests.RegisterUserAccountRequest;
 import com.thedurodola.ekolo.dtos.responses.RegisterUserAccountResponse;
 import com.thedurodola.ekolo.exceptions.*;
+import com.thedurodola.ekolo.proxy.cloud.CloudService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.verification.VerificationMode;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.time.LocalDate;
@@ -28,6 +30,9 @@ class AuthServiceTest {
 
     @Mock
     private UserAccounts userAccounts;
+
+    @Mock
+    private CloudService cloudService;
 
     @InjectMocks
     private AuthServiceImpl authService;
@@ -285,7 +290,12 @@ class AuthServiceTest {
 
     @Test
     void thatProfilePictureWasUploadedToTheCloud(){
-
+        ArgumentCaptor<UserAccount> captor = ArgumentCaptor.forClass(UserAccount.class);
+        authService.registerTierOneUser(request);
+        verify(userAccounts).save(captor.capture());
+        verify(userAccounts, Mockito.times(1)).save(captor.capture());
+        UserAccount user = captor.getValue();
+        assertThat(user.getProfilePictureUrl()).isNotBlank();
     }
 
 }
